@@ -25,7 +25,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    dockerImage = docker.build("${DOCKER_IMAGE}:${DOCKER_TAG}")
+                    bat "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} ."
                 }
             }
         }
@@ -38,9 +38,9 @@ pipeline {
                     passwordVariable: 'DOCKER_PASSWORD'
                 )]) {
                     script {
-                        sh "docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD"
-                        sh "docker push ${DOCKER_IMAGE}:${DOCKER_TAG}"
-                        sh "docker logout"
+                        bat "docker login -u %DOCKER_USERNAME% -p %DOCKER_PASSWORD%"
+                        bat "docker push ${DOCKER_IMAGE}:${DOCKER_TAG}"
+                        bat "docker logout"
                     }
                 }
             }
@@ -48,11 +48,15 @@ pipeline {
 
         stage('Deploy to GKE') {
             steps {
-                script {
-                    sh "gcloud auth login"
-                    sh "gcloud config set project ${GKE_PROJECT_ID}"
-                    sh "gcloud container clusters get-credentials ${GKE_CLUSTER_NAME} --zone ${GKE_ZONE}"
-                    sh "kubectl apply -f k8s/deployment.yaml"
+                withCredentials([file(credentialsId: 'gke-service-account-key', variable: 'GKE_KEY')]) {
+                    script {
+                        bat "gcloud auth activate-service-account --key-file=%GKE_KEY%"
+                        bat "gcloud config set project %GKE_PROJECT_ID%"
+                        bat "gcloud container clusters get-credentials %GKE_CLUSTER_NAME% --zone %GKE_ZONE%"
+                        
+                       
+                        bat "kubectl apply -f deployment.yaml"
+                    }
                 }
             }
         }
@@ -60,15 +64,13 @@ pipeline {
 
     post {
         success {
-            echo "✅ Successfully deployed ${DOCKER_IMAGE}:${DOCKER_TAG} to GKE"
+            bat 'echo "✅ Successfully deployed to GKE"'
         }
         failure {
-            echo "❌ Build failed. Check logs."
+            bat 'echo "❌ Build failed. Check logs."'
         }
         always {
-            script {
-                sh "gcloud auth revoke --all || true"
-            }
+            bat "gcloud auth revoke --all || exit 0"
         }
     }
 }
