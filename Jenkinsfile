@@ -8,9 +8,9 @@ pipeline {
         GITHUB_REPO = 'https://github.com/BR2225/React-native-CICD.git'
         GITHUB_BRANCH = 'main'
         // GKE Configuration
-        GKE_PROJECT_ID = 'your-gcp-project-id'
-        GKE_CLUSTER_NAME = 'your-cluster-name'
-        GKE_ZONE = 'your-cluster-zone'
+        GKE_PROJECT_ID = 'inductive-gift-456306-h4'
+        GKE_CLUSTER_NAME = 'react-native-cluster-1'
+        GKE_ZONE = 'us-central1-a'
         DEPLOYMENT_NAME = 'react-native-app'
         CONTAINER_PORT = '19000'
 
@@ -48,7 +48,7 @@ pipeline {
 
         stage('Deploy to GKE') {
             steps {
-                withCredentials([file(credentialsId: 'gke-service-account-key', variable: 'GKE_KEY')]) {
+                withCredentials([file(credentialsId: 'gke-service-account-key', variable: '114361191814707702914')]) {
                     script {
                         // Authenticate with GCloud
                         bat "gcloud auth activate-service-account --key-file=%GKE_KEY%"
