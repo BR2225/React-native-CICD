@@ -3,7 +3,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = 'baibhav225/react-native-app'
+        DOCKER_IMAGE = 'sha256:af0568912cb661d87a8e38b015f3c3c6194f2a331dd6d7530103398a1ff0c321'
         DOCKER_TAG = '16'
         GITHUB_REPO = 'https://github.com/BR2225/React-native-CICD.git'
         GITHUB_BRANCH = 'main'
@@ -47,21 +47,23 @@ pipeline {
     }
 
         stage('Deploy to GKE') {
-            steps {
-                withCredentials([file(credentialsId: 'gke-service-account-key', variable: '114361191814707702914')]) {
-                    script {
-                        // Authenticate with GCloud
-                        bat "gcloud auth activate-service-account --key-file=%GKE_KEY%"
-                        bat "gcloud config set project %GKE_PROJECT_ID%"
-                        bat "gcloud container clusters get-credentials %GKE_CLUSTER_NAME% --zone %GKE_ZONE%"
+    steps {
+        script {
+            // Authenticate using gcloud (login with your user credentials)
+            bat "gcloud auth login"
 
-                        // Apply Kubernetes manifests
-                        bat "kubectl apply -f k8s/deployment.yaml"
-                    }
-                }
-            }
+            // Set the project in gcloud configuration
+            bat "gcloud config set project ${GKE_PROJECT_ID}"
+
+            // Get credentials for your GKE cluster
+            bat "gcloud container clusters get-credentials ${GKE_CLUSTER_NAME} --zone ${GKE_ZONE}"
+
+            // Apply Kubernetes manifests (assuming the deployment.yaml file is inside the k8s folder)
+            bat "kubectl apply -f k8s/deployment.yaml"
         }
     }
+}
+
 
     post {
         success {
