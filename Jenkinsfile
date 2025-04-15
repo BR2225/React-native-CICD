@@ -56,7 +56,7 @@ pipeline {
                         bat "gcloud container clusters get-credentials %GKE_CLUSTER_NAME% --zone %GKE_ZONE%"
 
                         // Apply Kubernetes manifests
-                        bat "kubectl apply -f deployment.yaml"
+                        bat "kubectl apply -f k8s/deployment.yaml"
                     }
                 }
             }
