@@ -55,41 +55,6 @@ pipeline {
                         bat "gcloud config set project %GKE_PROJECT_ID%"
                         bat "gcloud container clusters get-credentials %GKE_CLUSTER_NAME% --zone %GKE_ZONE%"
 
-                        // Create Kubernetes deployment YAML
-                        writeFile file: 'deployment.yaml', text: """
-                        apiVersion: apps/v1
-                        kind: Deployment
-                        metadata:
-                          name: ${DEPLOYMENT_NAME}
-                        spec:
-                          replicas: 1
-                          selector:
-                            matchLabels:
-                              app: ${DEPLOYMENT_NAME}
-                          template:
-                            metadata:
-                              labels:
-                                app: ${DEPLOYMENT_NAME}
-                            spec:
-                              containers:
-                              - name: ${DEPLOYMENT_NAME}
-                                image: ${DOCKER_IMAGE}:${DOCKER_TAG}
-                                ports:
-                                - containerPort: ${CONTAINER_PORT}
-                        ---
-                        apiVersion: v1
-                        kind: Service
-                        metadata:
-                          name: ${DEPLOYMENT_NAME}-service
-                        spec:
-                          type: LoadBalancer
-                          ports:
-                          - port: 80
-                            targetPort: ${CONTAINER_PORT}
-                          selector:
-                            app: ${DEPLOYMENT_NAME}
-                        """
-
                         // Apply Kubernetes manifests
                         bat "kubectl apply -f deployment.yaml"
                     }
