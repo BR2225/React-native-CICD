@@ -7,9 +7,18 @@ pipeline {
         GCLOUD_PROJECT_ID = 'your-gcp-project-id'
         GCLOUD_CLUSTER_NAME = 'your-cluster-name'
         GCLOUD_ZONE = 'your-zone'
+        GITHUB_REPO = 'https://github.com/your-username/your-repo.git'
+        GITHUB_BRANCH = 'main'
     }
     
     stages {
+        stage('Checkout Code') {
+            steps {
+                git branch: "${GITHUB_BRANCH}",
+                    url: "${GITHUB_REPO}"
+            }
+        }
+
         stage('Build Docker Image') {
             steps {
                 script {
