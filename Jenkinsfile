@@ -4,7 +4,7 @@ pipeline {
 
     environment {
         DOCKER_IMAGE = 'baibhav225/react-native-app'
-        DOCKER_TAG = "${BUILD_NUMBER}"
+        DOCKER_TAG = '16'
         GITHUB_REPO = 'https://github.com/BR2225/React-native-CICD.git'
         GITHUB_BRANCH = 'main'
         // GKE Configuration
