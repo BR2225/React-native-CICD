@@ -1,19 +1,31 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: react-native-deployment
+  name: my-react-app
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
-      app: react-native-app
+      app: my-react-app
   template:
     metadata:
       labels:
-        app: react-native-app
+        app: my-react-app
     spec:
       containers:
-        - name: react-native-container
-          image: baibhav225/react-native-app:16
-          ports:
-            - containerPort: 8080
+      - name: react-app
+        image: <baibhav225/react-native-app>:<16>
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-react-app-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: my-react-app
+  ports:
+    - port: 80
+      targetPort: 80
