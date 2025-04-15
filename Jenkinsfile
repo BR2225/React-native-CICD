@@ -11,6 +11,7 @@ pipeline {
         GKE_CLUSTER_NAME = 'react-native-cluster-1'
         GKE_ZONE = 'us-central1-a'
         DEPLOYMENT_FILE = 'deployment.yaml'
+        GCLOUD_PATH = 'C:\\Program Files\\Google\\Cloud SDK\\google-cloud-sdk\\bin'
     }
 
     stages {
@@ -46,24 +47,15 @@ pipeline {
             }
         }
 
-               stage('Deploy to GKE') {
-            environment {
-                GCLOUD_PATH = "C:\\Program Files (x86)\\Google\\Cloud SDK\\google-cloud-sdk\\bin"
-            }
+        stage('Deploy to GKE') {
             steps {
                 script {
-                    // Set Google Cloud SDK path
-                    bat "SET PATH=%PATH%;${GCLOUD_PATH}"
-                    
-                   
-                    
-                    // Deploy to GKE
-                    bat """
-                        gcloud auth login
-                        gcloud config set project inductive-gift-456306-h4
-                        gcloud container clusters get-credentials react-native-cluster-1 --zone us-central1-a
-                        kubectl apply -f deployment.yaml
-                    """
+                    // Add gcloud to PATH
+                    bat "set PATH=%PATH%;%GCLOUD_PATH% && " +
+                        "gcloud auth login && " +
+                        "gcloud config set project %GKE_PROJECT_ID% && " +
+                        "gcloud container clusters get-credentials %GKE_CLUSTER_NAME% --zone %GKE_ZONE% && " +
+                        "kubectl apply -f %DEPLOYMENT_FILE%"
                 }
             }
         }
@@ -85,7 +77,9 @@ pipeline {
             bat 'echo ❌ Build failed. Check logs.'
         }
         always {
-            bat 'gcloud auth revoke --all || exit 0'
+            script {
+                bat "set PATH=%PATH%;%GCLOUD_PATH% && gcloud auth revoke --all || exit 0"
+            }
         }
     }
 }
