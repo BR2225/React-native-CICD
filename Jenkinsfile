@@ -22,10 +22,12 @@ pipeline {
             }
         }
 
+       // ... existing code ...
+
         stage('Build Docker Image') {
             steps {
                 script {
-                    bat "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} ."
+                    bat "docker build -t baibhav225/react-native-app:${BUILD_NUMBER} ."
                 }
             }
         }
@@ -38,14 +40,15 @@ pipeline {
                     passwordVariable: 'DOCKER_PASSWORD'
                 )]) {
                     script {
-                        bat "docker login -u %DOCKER_USERNAME% -p %DOCKER_PASSWORD%"
-                        bat "docker push ${DOCKER_IMAGE}:${DOCKER_TAG}"
+                        bat "echo %DOCKER_PASSWORD% | docker login -u baibhav225 --password-stdin"
+                        bat "docker push baibhav225/react-native-app:${BUILD_NUMBER}"
                         bat "docker logout"
                     }
                 }
             }
         }
 
+// ... existing code ...
         stage('Deploy to GKE') {
             steps {
                 withCredentials([file(credentialsId: 'gke-service-account-key', variable: 'GKE_KEY')]) {
