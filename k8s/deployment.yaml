@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: react-native-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: react-native-app
+  template:
+    metadata:
+      labels:
+        app: react-native-app
+    spec:
+      containers:
+        - name: react-native-container
+          image: baibhav225/react-native-app:16
+          ports:
+            - containerPort: 8080
