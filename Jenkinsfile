@@ -11,7 +11,7 @@ pipeline {
         GKE_CLUSTER_NAME = 'react-native-cluster-1'
         GKE_ZONE = 'us-central1-a'
         DEPLOYMENT_FILE = 'deployment.yaml'
-        GCLOUD_PATH = 'C:\\Program Files\\Google\\Cloud SDK\\google-cloud-sdk\\bin'
+        GCLOUD_PATH = '/opt/google-cloud-sdk/bin' // Change this path to match your Linux agent's gcloud path
     }
 
     stages {
@@ -21,7 +21,7 @@ pipeline {
             }
         }
 
-       stage('Check Docker') {
+        stage('Check Docker') {
             steps {
                 script {
                     sh 'docker --version'
@@ -32,7 +32,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    sh "docker build -t %DOCKER_IMAGE%:%BUILD_NUMBER% ."
+                    sh "docker build -t $DOCKER_IMAGE:$BUILD_NUMBER ."
                     sh "docker images"
                 }
             }
@@ -46,9 +46,11 @@ pipeline {
                     passwordVariable: 'DOCKER_PASSWORD'
                 )]) {
                     script {
-                        sh "docker login -u %DOCKER_USERNAME% -p %DOCKER_PASSWORD%"
-                        sh "docker push %DOCKER_IMAGE%:%BUILD_NUMBER%"
-                        sh "docker logout"
+                        sh '''
+                            echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+                            docker push $DOCKER_IMAGE:$BUILD_NUMBER
+                            docker logout
+                        '''
                     }
                 }
             }
@@ -57,11 +59,13 @@ pipeline {
         stage('Deploy to GKE') {
             steps {
                 script {
-                    sh "set PATH=%PATH%;%GCLOUD_PATH%"
-                    sh "gcloud auth login"
-                    sh "gcloud config set project %GKE_PROJECT_ID%"
-                    sh "gcloud container clusters get-credentials %GKE_CLUSTER_NAME% --zone %GKE_ZONE%"
-                    sh "kubectl apply -f k8s/%DEPLOYMENT_FILE%"
+                    sh '''
+                        export PATH=$PATH:$GCLOUD_PATH
+                        gcloud auth login --brief || true
+                        gcloud config set project $GKE_PROJECT_ID
+                        gcloud container clusters get-credentials $GKE_CLUSTER_NAME --zone $GKE_ZONE
+                        kubectl apply -f k8s/$DEPLOYMENT_FILE
+                    '''
                 }
             }
         }
@@ -84,8 +88,10 @@ pipeline {
         }
         always {
             script {
-                sh "set PATH=%PATH%;%GCLOUD_PATH%"
-                sh "gcloud auth revoke --all || exit 0"
+                sh '''
+                    export PATH=$PATH:$GCLOUD_PATH
+                    gcloud auth revoke --all || true
+                '''
             }
         }
     }
