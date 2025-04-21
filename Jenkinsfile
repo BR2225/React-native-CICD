@@ -24,7 +24,7 @@ pipeline {
        stage('Check Docker') {
             steps {
                 script {
-                    bat 'docker --version'
+                    sh 'docker --version'
                 }
             }
         }
@@ -32,8 +32,8 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    bat "docker build -t %DOCKER_IMAGE%:%BUILD_NUMBER% ."
-                    bat "docker images"
+                    sh "docker build -t %DOCKER_IMAGE%:%BUILD_NUMBER% ."
+                    sh "docker images"
                 }
             }
         }
@@ -46,9 +46,9 @@ pipeline {
                     passwordVariable: 'DOCKER_PASSWORD'
                 )]) {
                     script {
-                        bat "docker login -u %DOCKER_USERNAME% -p %DOCKER_PASSWORD%"
-                        bat "docker push %DOCKER_IMAGE%:%BUILD_NUMBER%"
-                        bat "docker logout"
+                        sh "docker login -u %DOCKER_USERNAME% -p %DOCKER_PASSWORD%"
+                        sh "docker push %DOCKER_IMAGE%:%BUILD_NUMBER%"
+                        sh "docker logout"
                     }
                 }
             }
@@ -57,11 +57,11 @@ pipeline {
         stage('Deploy to GKE') {
             steps {
                 script {
-                    bat "set PATH=%PATH%;%GCLOUD_PATH%"
-                    bat "gcloud auth login"
-                    bat "gcloud config set project %GKE_PROJECT_ID%"
-                    bat "gcloud container clusters get-credentials %GKE_CLUSTER_NAME% --zone %GKE_ZONE%"
-                    bat "kubectl apply -f k8s/%DEPLOYMENT_FILE%"
+                    sh "set PATH=%PATH%;%GCLOUD_PATH%"
+                    sh "gcloud auth login"
+                    sh "gcloud config set project %GKE_PROJECT_ID%"
+                    sh "gcloud container clusters get-credentials %GKE_CLUSTER_NAME% --zone %GKE_ZONE%"
+                    sh "kubectl apply -f k8s/%DEPLOYMENT_FILE%"
                 }
             }
         }
@@ -69,7 +69,7 @@ pipeline {
         stage('Verify Deployment') {
             steps {
                 script {
-                    bat "kubectl get pods"
+                    sh "kubectl get pods"
                 }
             }
         }
@@ -77,15 +77,15 @@ pipeline {
 
     post {
         success {
-            bat 'echo Successfully deployed to GKE'
+            sh 'echo Successfully deployed to GKE'
         }
         failure {
-            bat 'echo Build failed. Check logs.'
+            sh 'echo Build failed. Check logs.'
         }
         always {
             script {
-                bat "set PATH=%PATH%;%GCLOUD_PATH%"
-                bat "gcloud auth revoke --all || exit 0"
+                sh "set PATH=%PATH%;%GCLOUD_PATH%"
+                sh "gcloud auth revoke --all || exit 0"
             }
         }
     }
