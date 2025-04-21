@@ -11,7 +11,7 @@ pipeline {
         GKE_CLUSTER_NAME = 'react-native-cluster-1'
         GKE_ZONE = 'us-central1-a'
         DEPLOYMENT_FILE = 'deployment.yaml'
-        GCLOUD_PATH = '/opt/google-cloud-sdk/bin' // Change this path to match your Linux agent's gcloud path
+        GCLOUD_PATH = '/c/Users/baibh/AppData/Local/Google/Cloud SDK/google-cloud-sdk/bin/gcloud' // Change this path to match your Linux agent's gcloud path
     }
 
     stages {
